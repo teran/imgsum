@@ -16,7 +16,6 @@ import (
 )
 
 var (
-  // image image.Image
   re_canon = regexp.MustCompile(".cr(2|w)$")
 )
 
@@ -64,7 +63,6 @@ func main() {
   file := flag.Arg(0)
 
   img, err := getImage(file)
-
 	if err != nil {
     fmt.Println(err)
 		os.Exit(1)
