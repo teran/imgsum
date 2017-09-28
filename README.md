@@ -16,7 +16,7 @@ $ ./bin/imgsum-darwin-amd64 /Volumes/Backpack/Data/Photos/Lightroom/2015/08/29/2
 
 # NOTES
 
- * Image format supported at the moment: JPEG, GIF, PNG, CR2(Canon RAW)
+ * Image format supported at the moment: JPEG, GIF, PNG, CR2(Canon RAW), TIFF
 
 # TODO
 

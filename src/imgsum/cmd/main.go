@@ -14,12 +14,15 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/image/tiff"
+
 	"github.com/jteeuwen/imghash"
 	"github.com/nf/cr2"
 )
 
 var (
 	re_canon = regexp.MustCompile(".cr(2|w)$")
+	re_tiff = regexp.MustCompile(".tiff?$")
 )
 
 func calculate(file string) error {
@@ -90,6 +93,8 @@ func getImage(filename string) (image.Image, error) {
 
 	if re_canon.Match([]byte(filename)) {
 		img, err = cr2.Decode(fp)
+	} else if re_tiff.Match([]byte(filename)) {
+		img, err = tiff.Decode(fp)
 	} else {
 		img, _, err = image.Decode(fp)
 	}
