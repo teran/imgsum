@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 
+	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
 
 	"github.com/jteeuwen/imghash"
@@ -23,6 +24,7 @@ import (
 var (
 	re_canon = regexp.MustCompile(".cr(2|w)$")
 	re_tiff = regexp.MustCompile(".tiff?$")
+	re_bmp = regexp.MustCompile(".bmp$")
 )
 
 func calculate(file string) error {
@@ -95,6 +97,8 @@ func getImage(filename string) (image.Image, error) {
 		img, err = cr2.Decode(fp)
 	} else if re_tiff.Match([]byte(filename)) {
 		img, err = tiff.Decode(fp)
+	} else if re_bmp.Match([]byte(filename)) {
+		img, err = bmp.Decode(fp)
 	} else {
 		img, _, err = image.Decode(fp)
 	}
