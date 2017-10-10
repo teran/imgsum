@@ -104,7 +104,7 @@ func deduplicate(filename string) error {
 
 			files[hash] = append(files[hash], file)
 
-			if len(files[hash]) > 1 {
+			if len(files[hash]) == 2 {
 				counter = append(counter, hash)
 			}
 		}
