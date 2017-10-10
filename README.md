@@ -11,7 +11,7 @@ Example:
 
 ```
 $ ./bin/imgsum-darwin-amd64 /Volumes/Backpack/Data/Photos/Lightroom/2015/08/29/20150829-00334-5113.cr2
-220902682783518  /Volumes/Backpack/Data/Photos/Lightroom/2015/08/29/20150829-00334-5113.cr2
+007e7e7e00ffffff  /Volumes/Backpack/Data/Photos/Lightroom/2015/08/29/20150829-00334-5113.cr2
 ```
 
 # NOTES
