@@ -161,7 +161,12 @@ func main() {
 		fmt.Printf("  -check\n")
 		fmt.Printf("    read average hashes from the FILEs and check them\n")
 		fmt.Printf("  -find-duplicates\n")
-		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
+		fmt.Printf("    read average hashes from the FILEs and find duplicates\n\n")
+		fmt.Printf("Examples:\n")
+		fmt.Printf("  %s file.jpg\n", os.Args[0])
+		fmt.Printf("  %s file.jpg | tee /tmp/database.txt\n", os.Args[0])
+		fmt.Printf("  %s -check /tmp/database.txt\n", os.Args[0])
+		fmt.Printf("  %s -find-duplicates /tmp/database.txt\n", os.Args[0])
 	}
 
 	check := flag.Bool("check", false, "")
