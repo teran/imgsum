@@ -2,6 +2,8 @@ package main
 
 import (
 	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
 	"flag"
 	"fmt"
 	"image"
@@ -16,7 +18,7 @@ import (
 	"golang.org/x/image/bmp"
 	"golang.org/x/image/tiff"
 
-	"github.com/jteeuwen/imghash"
+	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
 )
 
@@ -40,7 +42,7 @@ func calculate(file string) error {
 		return err
 	}
 
-	fmt.Printf("%016x  %v\n", h, file)
+	fmt.Printf("%v  %v\n", h, file)
 	return nil
 }
 
@@ -69,7 +71,7 @@ func checkFiles(checksumFile string) error {
 				return err
 			}
 
-			if fields[0] == fmt.Sprintf("%016x", h) {
+			if fields[0] == h {
 				fmt.Printf("%v: OK\n", fields[1])
 			} else {
 				fmt.Printf("%v: FAILED\n", fields[1])
@@ -90,7 +92,6 @@ func deduplicate(filename string) error {
 	defer fp.Close()
 
 	files := make(map[string][]string)
-	// counter := make(map[string]int)
 	var counter []string
 
 	r := bufio.NewReader(fp)
@@ -150,8 +151,17 @@ func getImage(filename string) (image.Image, error) {
 	return img, nil
 }
 
-func hash(img image.Image) (uint64, error) {
-	return imghash.Average(img), nil
+func hash(img image.Image) (string, error) {
+	hasher := ish.NewAverageHash(1024, 1024)
+	dh, err := hasher.Hash(img)
+	if err != nil {
+		return "", err
+	}
+
+	h := sha256.New()
+	h.Write(dh)
+
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
 func main() {
