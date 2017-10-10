@@ -22,8 +22,8 @@ import (
 
 var (
 	re_canon = regexp.MustCompile(".cr(2|w)$")
-	re_tiff = regexp.MustCompile(".tiff?$")
-	re_bmp = regexp.MustCompile(".bmp$")
+	re_tiff  = regexp.MustCompile(".tiff?$")
+	re_bmp   = regexp.MustCompile(".bmp$")
 )
 
 func calculate(file string) error {
