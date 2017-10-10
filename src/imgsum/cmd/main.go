@@ -11,7 +11,6 @@ import (
 	"io"
 	"os"
 	"regexp"
-	"strconv"
 	"strings"
 
 	"golang.org/x/image/bmp"
@@ -41,7 +40,7 @@ func calculate(file string) error {
 		return err
 	}
 
-	fmt.Printf("%v  %v\n", strconv.Itoa(int(h)), file)
+	fmt.Printf("%016x  %v\n", h, file)
 	return nil
 }
 
@@ -70,7 +69,7 @@ func checkFiles(checksumFile string) error {
 				return err
 			}
 
-			if fields[0] == strconv.Itoa(int(h)) {
+			if fields[0] == fmt.Sprintf("%016x", h) {
 				fmt.Printf("%v: OK\n", fields[1])
 			} else {
 				fmt.Printf("%v: FAILED\n", fields[1])
@@ -132,11 +131,19 @@ func main() {
 
 	if *check == true {
 		for file := range flag.Args() {
-			checkFiles(flag.Arg(file))
+			err := checkFiles(flag.Arg(file))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 		}
 	} else {
 		for file := range flag.Args() {
-			calculate(flag.Arg(file))
+			err := calculate(flag.Arg(file))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
 		}
 	}
 }
