@@ -81,6 +81,47 @@ func checkFiles(checksumFile string) error {
 	return nil
 }
 
+func deduplicate(filename string) error {
+	fp, err := os.Open(filename)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, filename, err.Error())
+		return err
+	}
+	defer fp.Close()
+
+	files := make(map[string][]string)
+	// counter := make(map[string]int)
+	var counter []string
+
+	r := bufio.NewReader(fp)
+	line, err := r.ReadString(10)
+	for err != io.EOF {
+		fields := strings.Fields(line)
+		if len(fields) == 2 {
+			hash := fields[0]
+			file := fields[1]
+
+			files[hash] = append(files[hash], file)
+
+			if len(files[hash]) > 1 {
+				counter = append(counter, hash)
+			}
+		}
+
+		line, err = r.ReadString(10)
+	}
+
+	for key := range counter {
+		fmt.Printf("%v:\n", counter[key])
+		for file := range files[counter[key]] {
+			fmt.Println(files[counter[key]][file])
+		}
+		fmt.Println("")
+	}
+
+	return nil
+}
+
 func getImage(filename string) (image.Image, error) {
 	var img image.Image
 	var err error
@@ -119,9 +160,12 @@ func main() {
 		fmt.Printf("Print or check image Average hashes\n")
 		fmt.Printf("  -check\n")
 		fmt.Printf("    read average hashes from the FILEs and check them\n")
+		fmt.Printf("  -find-duplicates\n")
+		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
 	}
 
 	check := flag.Bool("check", false, "")
+	dedup := flag.Bool("find-duplicates", false, "")
 
 	flag.Parse()
 	if flag.NArg() < 1 {
@@ -132,6 +176,14 @@ func main() {
 	if *check == true {
 		for file := range flag.Args() {
 			err := checkFiles(flag.Arg(file))
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+		}
+	} else if *dedup {
+		for file := range flag.Args() {
+			err := deduplicate(flag.Arg(file))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 				os.Exit(1)
