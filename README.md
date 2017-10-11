@@ -19,7 +19,15 @@ Examples:
 
 # NOTES
 
- * Image format supported at the moment: BMP, JPEG, GIF, PNG, CR2(Canon RAW), DNG, TIFF
+Image format supported and tested:
+* Adobe Digital Negative(`*.dng`)
+* Canon RAW(`*.cr2` - only, `*.crw` is not supported yet)
+* Epson RAW(`*.erf`)
+* Hasselblad 3FR(`*.3fr`)
+* JPEG
+* Nikon RAW(`*.nef` - only, `*.nrw` is not supported yet)
+* TIFF
+
 
 # TODO
 
