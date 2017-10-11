@@ -7,25 +7,17 @@ import (
 	"flag"
 	"fmt"
 	"image"
-	_ "image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 	"io"
 	"os"
 	"regexp"
 	"strings"
-
-	"golang.org/x/image/bmp"
-	"golang.org/x/image/tiff"
 
 	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
 )
 
 var (
-	re_canon = regexp.MustCompile(".cr(2|w)$")
-	re_tiff  = regexp.MustCompile(".tiff?$")
-	re_bmp   = regexp.MustCompile(".bmp$")
+	re_canon = regexp.MustCompile("(?i).cr(2)$")
 )
 
 func calculate(file string) error {
@@ -136,10 +128,6 @@ func getImage(filename string) (image.Image, error) {
 
 	if re_canon.Match([]byte(filename)) {
 		img, err = cr2.Decode(fp)
-	} else if re_tiff.Match([]byte(filename)) {
-		img, err = tiff.Decode(fp)
-	} else if re_bmp.Match([]byte(filename)) {
-		img, err = bmp.Decode(fp)
 	} else {
 		img, _, err = image.Decode(fp)
 	}
@@ -193,7 +181,6 @@ func main() {
 			err := checkFiles(flag.Arg(file))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
 			}
 		}
 	} else if *dedup {
@@ -201,7 +188,6 @@ func main() {
 			err := deduplicate(flag.Arg(file))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
 			}
 		}
 	} else {
@@ -209,7 +195,6 @@ func main() {
 			err := calculate(flag.Arg(file))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
-				os.Exit(1)
 			}
 		}
 	}
