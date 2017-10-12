@@ -9,6 +9,8 @@ Print or check image Average hashes
     read average hashes from the FILEs and check them
   -find-duplicates
     read average hashes from the FILEs and find duplicates
+  -json-output
+    Return duplicates as a JSON(useful for IPC)
 
 Examples:
   ./bin/imgsum-darwin-amd64 file.jpg

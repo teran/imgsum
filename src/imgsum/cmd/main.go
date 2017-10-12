@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"image"
@@ -15,6 +16,11 @@ import (
 	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
 )
+
+type JsonOutput struct {
+	Duplicates [][]string `json:"duplicates"`
+	Count      int        `json:"count"`
+}
 
 var (
 	re_canon = regexp.MustCompile("(?i).cr(2)$")
@@ -75,7 +81,7 @@ func checkFiles(checksumFile string) error {
 	return nil
 }
 
-func deduplicate(filename string) error {
+func deduplicate(filename string, json_output bool) error {
 	fp, err := os.Open(filename)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, filename, err.Error())
@@ -104,12 +110,25 @@ func deduplicate(filename string) error {
 		line, err = r.ReadString(10)
 	}
 
-	for key := range counter {
-		fmt.Printf("%v:\n", counter[key])
-		for file := range files[counter[key]] {
-			fmt.Println(files[counter[key]][file])
+	if json_output {
+		out := JsonOutput{}
+		for key := range counter {
+			out.Duplicates = append(out.Duplicates, files[counter[key]])
 		}
-		fmt.Println("")
+		out.Count = len(counter)
+		jsonString, err := json.Marshal(out)
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(jsonString))
+	} else {
+		for key := range counter {
+			fmt.Printf("%v:\n", counter[key])
+			for file := range files[counter[key]] {
+				fmt.Println(files[counter[key]][file])
+			}
+			fmt.Println("")
+		}
 	}
 
 	return nil
@@ -159,7 +178,9 @@ func main() {
 		fmt.Printf("  -check\n")
 		fmt.Printf("    read average hashes from the FILEs and check them\n")
 		fmt.Printf("  -find-duplicates\n")
-		fmt.Printf("    read average hashes from the FILEs and find duplicates\n\n")
+		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
+		fmt.Printf("  -json-output\n")
+		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n\n")
 		fmt.Printf("Examples:\n")
 		fmt.Printf("  %s file.jpg\n", os.Args[0])
 		fmt.Printf("  %s file.jpg | tee /tmp/database.txt\n", os.Args[0])
@@ -167,8 +188,9 @@ func main() {
 		fmt.Printf("  %s -find-duplicates /tmp/database.txt\n", os.Args[0])
 	}
 
-	check := flag.Bool("check", false, "")
-	dedup := flag.Bool("find-duplicates", false, "")
+	check_mode := flag.Bool("check", false, "")
+	deduplicate_mode := flag.Bool("find-duplicates", false, "")
+	json_output := flag.Bool("json-output", false, "")
 
 	flag.Parse()
 	if flag.NArg() < 1 {
@@ -176,16 +198,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *check == true {
+	if *check_mode == true {
 		for file := range flag.Args() {
 			err := checkFiles(flag.Arg(file))
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
 		}
-	} else if *dedup {
+	} else if *deduplicate_mode {
 		for file := range flag.Args() {
-			err := deduplicate(flag.Arg(file))
+			err := deduplicate(flag.Arg(file), *json_output)
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}
