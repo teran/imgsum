@@ -34,7 +34,4 @@ Image format supported and tested:
 
 # TODO
 
- * Add `-c` key working the same way as in *sum GNU utils
- * NEF format support
- * DNG format support
  * ORF format support
