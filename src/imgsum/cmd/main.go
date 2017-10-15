@@ -2,23 +2,22 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"image"
+	"image/jpeg"
 	"io"
 	"os"
 	"regexp"
 	"strings"
 
+	"github.com/Soreil/arw"
 	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
-
-	"bytes"
-	"image/jpeg"
-	"github.com/Soreil/arw"
 )
 
 type JsonOutput struct {
@@ -28,7 +27,7 @@ type JsonOutput struct {
 
 var (
 	re_canon = regexp.MustCompile("(?i).cr(2)$")
-	re_sony = regexp.MustCompile("(?i).(arw|sr2)$")
+	re_sony  = regexp.MustCompile("(?i).(arw|sr2)$")
 )
 
 func calculate(file string) error {
@@ -154,7 +153,7 @@ func getImage(filename string) (image.Image, error) {
 		img, err = cr2.Decode(fp)
 	} else if re_sony.Match([]byte(filename)) {
 		header, err := arw.ParseHeader(fp)
-		meta, err := arw.ExtractMetaData(fp, int64(header.Offset),0)
+		meta, err := arw.ExtractMetaData(fp, int64(header.Offset), 0)
 		if err != nil {
 			return nil, err
 		}
