@@ -15,6 +15,10 @@ import (
 
 	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
+
+	"bytes"
+	"image/jpeg"
+	"github.com/Soreil/arw"
 )
 
 type JsonOutput struct {
@@ -24,6 +28,7 @@ type JsonOutput struct {
 
 var (
 	re_canon = regexp.MustCompile("(?i).cr(2)$")
+	re_sony = regexp.MustCompile("(?i).(arw|sr2)$")
 )
 
 func calculate(file string) error {
@@ -147,6 +152,32 @@ func getImage(filename string) (image.Image, error) {
 
 	if re_canon.Match([]byte(filename)) {
 		img, err = cr2.Decode(fp)
+	} else if re_sony.Match([]byte(filename)) {
+		header, err := arw.ParseHeader(fp)
+		meta, err := arw.ExtractMetaData(fp, int64(header.Offset),0)
+		if err != nil {
+			return nil, err
+		}
+
+		var jpegOffset uint32
+		var jpegLength uint32
+		for i := range meta.FIA {
+			switch meta.FIA[i].Tag {
+			case arw.JPEGInterchangeFormat:
+				jpegOffset = meta.FIA[i].Offset
+			case arw.JPEGInterchangeFormatLength:
+				jpegLength = meta.FIA[i].Offset
+			}
+		}
+		jpg, err := arw.ExtractThumbnail(fp, jpegOffset, jpegLength)
+		if err != nil {
+			return nil, err
+		}
+		reader := bytes.NewReader(jpg)
+		img, err = jpeg.Decode(reader)
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		img, _, err = image.Decode(fp)
 	}
