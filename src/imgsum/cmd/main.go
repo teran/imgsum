@@ -2,22 +2,14 @@ package main
 
 import (
 	"bufio"
-	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"image"
-	"image/jpeg"
 	"io"
 	"os"
-	"regexp"
 	"strings"
 
-	"github.com/Soreil/arw"
-	"github.com/brett-lempereur/ish"
-	"github.com/nf/cr2"
+	"imgsum/image"
 )
 
 type JsonOutput struct {
@@ -25,30 +17,24 @@ type JsonOutput struct {
 	Count      int        `json:"count"`
 }
 
-var (
-	re_canon = regexp.MustCompile("(?i).cr(2)$")
-	re_sony  = regexp.MustCompile("(?i).(arw|sr2)$")
-)
-
-func calculate(file string) error {
-	var img image.Image
-	img, err := getImage(file)
+func calculate(file string) (error) {
+	i, err := image.NewImage(file)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
 		return err
 	}
 
-	h, err := hash(img)
+	h, err := i.Hexdigest()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
 		return err
 	}
 
-	fmt.Printf("%v  %v\n", h, file)
+	fmt.Printf("%v  %v\n", h, i.Filename())
 	return nil
 }
 
-func checkFiles(checksumFile string) error {
+func check(checksumFile string) error {
 	fp, err := os.Open(checksumFile)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, checksumFile, err.Error())
@@ -61,16 +47,16 @@ func checkFiles(checksumFile string) error {
 	for err != io.EOF {
 		fields := strings.Fields(line)
 		if len(fields) == 2 {
-			img, err := getImage(fields[1])
+			i, err := image.NewImage(fields[1])
 			if err != nil {
 				fmt.Fprintln(os.Stderr, fields[1], err.Error())
-				return err
+				continue
 			}
 
-			h, err := hash(img)
+			h, err := i.Hexdigest()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, fields[1], err.Error())
-				return err
+				continue
 			}
 
 			if fields[0] == h {
@@ -138,69 +124,6 @@ func deduplicate(filename string, json_output bool) error {
 	return nil
 }
 
-func getImage(filename string) (image.Image, error) {
-	var img image.Image
-	var err error
-	var fp *os.File
-
-	fp, err = os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer fp.Close()
-
-	if re_canon.Match([]byte(filename)) {
-		img, err = cr2.Decode(fp)
-	} else if re_sony.Match([]byte(filename)) {
-		header, err := arw.ParseHeader(fp)
-		meta, err := arw.ExtractMetaData(fp, int64(header.Offset), 0)
-		if err != nil {
-			return nil, err
-		}
-
-		var jpegOffset uint32
-		var jpegLength uint32
-		for i := range meta.FIA {
-			switch meta.FIA[i].Tag {
-			case arw.JPEGInterchangeFormat:
-				jpegOffset = meta.FIA[i].Offset
-			case arw.JPEGInterchangeFormatLength:
-				jpegLength = meta.FIA[i].Offset
-			}
-		}
-		jpg, err := arw.ExtractThumbnail(fp, jpegOffset, jpegLength)
-		if err != nil {
-			return nil, err
-		}
-		reader := bytes.NewReader(jpg)
-		img, err = jpeg.Decode(reader)
-		if err != nil {
-			return nil, err
-		}
-	} else {
-		img, _, err = image.Decode(fp)
-	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	return img, nil
-}
-
-func hash(img image.Image) (string, error) {
-	hasher := ish.NewAverageHash(1024, 1024)
-	dh, err := hasher.Hash(img)
-	if err != nil {
-		return "", err
-	}
-
-	h := sha256.New()
-	h.Write(dh)
-
-	return hex.EncodeToString(h.Sum(nil)), nil
-}
-
 func main() {
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [OPTION]... [FILE]...\n", os.Args[0])
@@ -230,24 +153,15 @@ func main() {
 
 	if *check_mode == true {
 		for file := range flag.Args() {
-			err := checkFiles(flag.Arg(file))
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
+			check(flag.Arg(file))
 		}
 	} else if *deduplicate_mode {
 		for file := range flag.Args() {
-			err := deduplicate(flag.Arg(file), *json_output)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
+			deduplicate(flag.Arg(file), *json_output)
 		}
 	} else {
 		for file := range flag.Args() {
-			err := calculate(flag.Arg(file))
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err)
-			}
+			calculate(flag.Arg(file))
 		}
 	}
 }
