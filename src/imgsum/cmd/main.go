@@ -6,8 +6,11 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"runtime"
 	"strings"
+	"sync"
 
 	"imgsum/image"
 )
@@ -17,20 +20,29 @@ type JsonOutput struct {
 	Count      int        `json:"count"`
 }
 
+type JsonInput struct {
+	Files []string `json:"files"`
+}
+
+var wg sync.WaitGroup
+
 func calculate(file string) error {
 	i, err := image.NewImage(file)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
+		wg.Done()
 		return err
 	}
 
 	h, err := i.Hexdigest()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
+		wg.Done()
 		return err
 	}
 
 	fmt.Printf("%v  %v\n", h, i.Filename())
+	wg.Done()
 	return nil
 }
 
@@ -130,8 +142,12 @@ func main() {
 		fmt.Printf("Print or check image Average hashes\n")
 		fmt.Printf("  -check\n")
 		fmt.Printf("    read average hashes from the FILEs and check them\n")
+		fmt.Printf("  -concurrency\n")
+		fmt.Printf("    Amount of routines to spawn at the same time(CPU count by default)\n")
 		fmt.Printf("  -find-duplicates\n")
 		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
+		fmt.Printf("  -json_input\n")
+		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']})\n")
 		fmt.Printf("  -json-output\n")
 		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n\n")
 		fmt.Printf("Examples:\n")
@@ -144,9 +160,11 @@ func main() {
 	check_mode := flag.Bool("check", false, "")
 	deduplicate_mode := flag.Bool("find-duplicates", false, "")
 	json_output := flag.Bool("json-output", false, "")
+	json_input := flag.Bool("json-input", false, "")
+	concurrency := flag.Int("concurrency", runtime.NumCPU(), "")
 
 	flag.Parse()
-	if flag.NArg() < 1 {
+	if flag.NArg() < 1 && !*json_input {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -160,8 +178,38 @@ func main() {
 			deduplicate(flag.Arg(file), *json_output)
 		}
 	} else {
-		for file := range flag.Args() {
-			calculate(flag.Arg(file))
+		var files []string
+		if *json_input {
+			var jsonInput JsonInput
+			data, err := ioutil.ReadAll(os.Stdin)
+			if err != nil {
+				panic(err)
+			}
+			if err := json.Unmarshal(data, &jsonInput); err != nil {
+				panic(err)
+			}
+
+			files = jsonInput.Files
+		} else {
+			files = flag.Args()
 		}
+
+		sem := make(chan bool, *concurrency)
+		for file := range files {
+			sem <- true
+			filename := files[file]
+			wg.Add(1)
+			go func() {
+				calculate(filename)
+				defer func() {
+					<-sem
+				}()
+			}()
+		}
+
+		for i := 0; i < cap(sem); i++ {
+			sem <- true
+		}
+		wg.Wait()
 	}
 }
