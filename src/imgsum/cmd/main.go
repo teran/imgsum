@@ -17,7 +17,7 @@ type JsonOutput struct {
 	Count      int        `json:"count"`
 }
 
-func calculate(file string) (error) {
+func calculate(file string) error {
 	i, err := image.NewImage(file)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
