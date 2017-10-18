@@ -12,7 +12,7 @@ Print or check image Average hashes
   -find-duplicates
     read average hashes from the FILEs and find duplicates
   -json-input
-    Read file list from stdin as a JSON({'files':['file1', 'file2']})
+    Read file list from stdin as a JSON({'files':['file1', 'file2']}) and calculate their hash
   -json-output
     Return duplicates as a JSON(useful for IPC)
 
@@ -21,6 +21,7 @@ Examples:
   ./bin/imgsum-darwin-amd64 file.jpg | tee /tmp/database.txt
   ./bin/imgsum-darwin-amd64 -check /tmp/database.txt
   ./bin/imgsum-darwin-amd64 -find-duplicates /tmp/database.txt
+  cat input.json | ./bin/imgsum-darwin-amd64 -json-input
 ```
 
 # NOTES

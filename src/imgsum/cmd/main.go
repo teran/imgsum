@@ -147,7 +147,7 @@ func main() {
 		fmt.Printf("  -find-duplicates\n")
 		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
 		fmt.Printf("  -json-input\n")
-		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']})\n")
+		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']}) and calculate their hash\n")
 		fmt.Printf("  -json-output\n")
 		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n\n")
 		fmt.Printf("Examples:\n")
@@ -155,6 +155,7 @@ func main() {
 		fmt.Printf("  %s file.jpg | tee /tmp/database.txt\n", os.Args[0])
 		fmt.Printf("  %s -check /tmp/database.txt\n", os.Args[0])
 		fmt.Printf("  %s -find-duplicates /tmp/database.txt\n", os.Args[0])
+		fmt.Printf("  cat input.json | %s -json-input\n", os.Args[0])
 	}
 
 	check_mode := flag.Bool("check", false, "")
