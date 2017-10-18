@@ -7,8 +7,12 @@ Usage: ./bin/imgsum-darwin-amd64 [OPTION]... [FILE]...
 Print or check image Average hashes
   -check
     read average hashes from the FILEs and check them
+  -concurrency
+    Amount of routines to spawn at the same time(CPU count by default)
   -find-duplicates
     read average hashes from the FILEs and find duplicates
+  -json_input
+    Read file list from stdin as a JSON({'files':['file1', 'file2']})
   -json-output
     Return duplicates as a JSON(useful for IPC)
 
