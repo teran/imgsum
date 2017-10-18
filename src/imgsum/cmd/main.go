@@ -97,10 +97,10 @@ func deduplicate(filename string, json_output bool) error {
 	r := bufio.NewReader(fp)
 	line, err := r.ReadString(10)
 	for err != io.EOF {
-		fields := strings.Fields(line)
+		fields := strings.SplitN(line, " ", 2)
 		if len(fields) == 2 {
-			hash := fields[0]
-			file := fields[1]
+			hash := strings.TrimSpace(fields[0])
+			file := strings.TrimSpace(fields[1])
 
 			files[hash] = append(files[hash], file)
 
