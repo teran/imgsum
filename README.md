@@ -24,6 +24,29 @@ Examples:
   cat input.json | ./bin/imgsum-darwin-amd64 -json-input
 ```
 
+# JSON input
+
+imgsum supports receiving file list to calculate hashes from STDIN which is useful
+for IPC. The scheme for the JSON should be the following:
+
+```
+{
+  "files": [
+    "/Volumes/Disk1/file1.cr2",
+    "/Volumes/Disk1/file2.jpg",
+    "/Volumes/Disk1/file3.jpg"
+  ]
+}
+```
+
+Golang model:
+
+```
+type JsonInput struct {
+	Files []string `json:"files"`
+}
+```
+
 # NOTES
 
 Image format supported and tested:
