@@ -8,7 +8,7 @@ Print or check image Average hashes
   -check
     read average hashes from the FILEs and check them
   -concurrency
-    Amount of routines to spawn at the same time(CPU count by default)
+    Amount of routines to spawn at the same time(8 by default for your system)
   -find-duplicates
     read average hashes from the FILEs and find duplicates
   -json-input

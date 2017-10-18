@@ -143,7 +143,7 @@ func main() {
 		fmt.Printf("  -check\n")
 		fmt.Printf("    read average hashes from the FILEs and check them\n")
 		fmt.Printf("  -concurrency\n")
-		fmt.Printf("    Amount of routines to spawn at the same time(CPU count by default)\n")
+		fmt.Printf("    Amount of routines to spawn at the same time(%v by default for your system)\n", runtime.NumCPU())
 		fmt.Printf("  -find-duplicates\n")
 		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
 		fmt.Printf("  -json-input\n")
