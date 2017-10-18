@@ -11,7 +11,7 @@ Print or check image Average hashes
     Amount of routines to spawn at the same time(CPU count by default)
   -find-duplicates
     read average hashes from the FILEs and find duplicates
-  -json_input
+  -json-input
     Read file list from stdin as a JSON({'files':['file1', 'file2']})
   -json-output
     Return duplicates as a JSON(useful for IPC)

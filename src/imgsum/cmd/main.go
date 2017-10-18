@@ -146,7 +146,7 @@ func main() {
 		fmt.Printf("    Amount of routines to spawn at the same time(CPU count by default)\n")
 		fmt.Printf("  -find-duplicates\n")
 		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
-		fmt.Printf("  -json_input\n")
+		fmt.Printf("  -json-input\n")
 		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']})\n")
 		fmt.Printf("  -json-output\n")
 		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n\n")
