@@ -25,6 +25,8 @@ type JsonInput struct {
 }
 
 var wg sync.WaitGroup
+var Version = "No version specified(probably trunk build)"
+
 
 func calculate(file string) error {
 	i, err := image.NewImage(file)
@@ -149,7 +151,9 @@ func main() {
 		fmt.Printf("  -json-input\n")
 		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']}) and calculate their hash\n")
 		fmt.Printf("  -json-output\n")
-		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n\n")
+		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n")
+		fmt.Printf("  -version\n")
+		fmt.Printf("    Print imgsum version\n\n")
 		fmt.Printf("Examples:\n")
 		fmt.Printf("  %s file.jpg\n", os.Args[0])
 		fmt.Printf("  %s file.jpg | tee /tmp/database.txt\n", os.Args[0])
@@ -163,9 +167,10 @@ func main() {
 	json_output := flag.Bool("json-output", false, "")
 	json_input := flag.Bool("json-input", false, "")
 	concurrency := flag.Int("concurrency", runtime.NumCPU(), "")
+	version := flag.Bool("version", false, "")
 
 	flag.Parse()
-	if flag.NArg() < 1 && !*json_input {
+	if flag.NArg() < 1 && !*json_input && !*version {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -178,6 +183,8 @@ func main() {
 		for file := range flag.Args() {
 			deduplicate(flag.Arg(file), *json_output)
 		}
+	} else if *version == true {
+		fmt.Println(Version)
 	} else {
 		var files []string
 		if *json_input {
