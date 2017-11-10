@@ -11,6 +11,7 @@ import (
 	"log"
 	"reflect"
 	"unsafe"
+	"bytes"
 )
 
 //CIPA DC-008-2012 Table 1
@@ -72,6 +73,7 @@ type FIAval struct {
 	IFDtype
 	ascii     *[]byte
 	short     *[]uint16
+	sshort	  *[]int16
 	long      *[]uint32
 	slong     *[]int32
 	rat       *[]float32
@@ -132,35 +134,41 @@ type FaceInfo2 struct {
 func (f FIAval) String() string {
 	var val string
 	switch f.IFDtype {
-	case 1,7:
-		val = fmt.Sprint(*f.ascii)
-	case 2:
+	case BYTE,UNDEFINED:
+		val = fmt.Sprintf("%x",*f.ascii)
+	case ASCII:
 		val = fmt.Sprint(string(*f.ascii))
-	case 3:
+	case SHORT:
 		parts := make([]string,len(*f.short))
 		for i, short := range *f.short {
 			parts[i] = fmt.Sprint(short)
 		}
 		val = strings.Join(parts,", ")
-	case 4:
+	case SSHORT:
+		parts := make([]string,len(*f.sshort))
+		for i, sshort := range *f.sshort {
+			parts[i] = fmt.Sprint(sshort)
+		}
+		val = strings.Join(parts,", ")
+	case LONG:
 		parts := make([]string,len(*f.long))
 		for i, long := range *f.long {
 			parts[i] = fmt.Sprint(long)
 		}
 		val = strings.Join(parts,", ")
-	case 9:
+	case SLONG:
 		parts := make([]string,len(*f.slong))
 		for i, slong := range *f.slong {
 			parts[i] = fmt.Sprint(slong)
 		}
 		val = strings.Join(parts,", ")
-	case 5:
+	case RATIONAL:
 		parts := make([]string,len(*f.rat))
 		for i, rat := range *f.rat {
 			parts[i] = fmt.Sprint(rat)
 		}
 		val = strings.Join(parts,", ")
-	case 10:
+	case SRATIONAL:
 		parts := make([]string,len(*f.rat))
 		for i, rat := range *f.rat {
 			parts[i] = fmt.Sprint(rat)
@@ -181,7 +189,7 @@ const (
 	ImageHeight IFDtag = 257
 	BitsPerSample IFDtag = 258
 	Compression      IFDtag = 259
-	PhotometricInterpretation IFDtag = 262
+	PhotometricInterpretation IFDtag = 262 //32803: CFA
 	ImageDescription IFDtag = 270
 	Make             IFDtag = 271
 	Model            IFDtag = 272
@@ -201,6 +209,8 @@ const (
 	JPEGInterchangeFormat       IFDtag = 513
 	JPEGInterchangeFormatLength IFDtag = 514
 	YCbCrPositioning            IFDtag = 531
+
+	XMP IFDtag = 700 //http://www.adobe.com/products/xmp.html Some completely useless XML format
 
 	ShotInfo IFDtag = 0x3000
 	FileFormat IFDtag = 0xb000
@@ -223,10 +233,49 @@ const (
 	IDC2_IFD IFDtag = 0x7241
 	MRWInfo IFDtag = 0x7250
 
+	BlackLevel                            IFDtag = 0x7300
+	WB_GRBGLevelsAuto                     IFDtag = 0x7302
+	WB_GRBGLevels                         IFDtag = 0x7303
+	BlackLevel2                           IFDtag = 0x7310
+	WB_RGGBLevels                         IFDtag = 0x7313
+	WB_RGBLevelsDaylight                  IFDtag = 0x7480
+	WB_RGBLevelsCloudy                    IFDtag = 0x7481
+	WB_RGBLevelsTungsten                  IFDtag = 0x7482
+	WB_RGBLevelsFlash                     IFDtag = 0x7483
+	WB_RGBLevels4500K                     IFDtag = 0x7484
+	WB_RGBLevelsFluorescent               IFDtag = 0x7486
+	MaxApertureAtMaxFocal                 IFDtag = 0x74a0
+	MaxApertureAtMinFocal                 IFDtag = 0x74a1
+	MaxFocalLength                        IFDtag = 0x74a2
+	MinFocalLength                        IFDtag = 0x74a3
+	SR2DataIFD                            IFDtag = 0x74c0
+	ColorMatrix                           IFDtag = 0x7800
+	WB_RGBLevelsDaylight2                  IFDtag = 0x7820
+	WB_RGBLevelsCloudy2                    IFDtag = 0x7821
+	WB_RGBLevelsTungsten2                  IFDtag = 0x7822
+	WB_RGBLevelsFlash2                     IFDtag = 0x7823
+	WB_RGBLevels4500K2                     IFDtag = 0x7824
+	WB_RGBLevelsShade2                     IFDtag = 0x7825
+	WB_RGBLevelsFluorescent2               IFDtag = 0x7826
+	WB_RGBLevelsFluorescentP1             IFDtag = 0x7827
+	WB_RGBLevelsFluorescentP2             IFDtag = 0x7828
+	WB_RGBLevelsFluorescentM1             IFDtag = 0x7829
+	WB_RGBLevels8500K                     IFDtag = 0x782a
+	WB_RGBLevels6000K                     IFDtag = 0x782b
+	WB_RGBLevels3200K                     IFDtag = 0x782c
+	WB_RGBLevels2500K                     IFDtag = 0x782d
+	WhiteLevel                            IFDtag = 0x787f
+	VignettingCorrParams                  IFDtag = 0x797d
+	ChromaticAberrationCorrParams         IFDtag = 0x7980
+	DistortionCorrParams                  IFDtag = 0x7982
+
+
 	ExifTag             IFDtag = 34665
 	GPSTag              IFDtag = 34853
 	InteroperabilityTag IFDtag = 40965
 	PrintImageMatching  IFDtag = 50341
+	DefaultCropOrigin 	IFDtag = 50719
+	DefaultCropSize 	IFDtag = 50720
 	DNGPrivateData      IFDtag = 50740
 
 	ExposureTime             IFDtag = 33434
@@ -295,6 +344,17 @@ const (
 
 )
 
+//go:generate stringer -type=sonyRawFile
+type sonyRawFile uint16
+
+const (
+	raw14 sonyRawFile = iota
+	raw12
+	craw
+	crawLossless
+)
+
+
 //IFD datatype, most datatypes translate in to C datatypes.
 //go:generate stringer -type=IFDtype
 type IFDtype uint16
@@ -310,7 +370,7 @@ const (
 	UNDEFINED
 	SSHORT
 	SLONG
-	SRRATIONAL
+	SRATIONAL
 )
 
 //IFDType length in bytes
@@ -322,7 +382,7 @@ func (i IFDtype) Len() int {
 		return 2
 	case LONG, SLONG:
 		return 4
-	case RATIONAL, SRRATIONAL:
+	case RATIONAL, SRATIONAL:
 		return 8
 	default:
 		return -1
@@ -369,45 +429,55 @@ func ExtractMetaData(r io.ReadSeeker, offset int64, whence int) (meta EXIFIFD, e
 		//Offset field is actually the value
 		if uint32(interop.Type.Len())*interop.Count <= 4 {
 			switch interop.Type {
-			case 1, 2, 7:
+			case UNDEFINED,ASCII,BYTE:
 				values := make([]byte, interop.Count)
 				for i := range values {
 					values[i] = byte(((interop.Offset << uint32(8*i)) & 0xff000000) >> 24)
 				}
 				meta.FIAvals[n].ascii = &values
-			case 3:
+			case SHORT:
 				values := make([]uint16, interop.Count)
 				for i := range values {
 					values[i] = uint16(((interop.Offset << uint32(16*i)) & 0xffff0000) >> 16)
 				}
 				meta.FIAvals[n].short = &values
-			case 4:
+			case SSHORT:
+				values := make([]int16, interop.Count)
+				for i := range values {
+					values[i] = int16(((interop.Offset << uint32(16*i)) & 0xffff0000) >> 16)
+				}
+				meta.FIAvals[n].sshort = &values
+			case LONG:
 				values := []uint32{interop.Count}
 				meta.FIAvals[n].long = &values
-			case 9:
+			case SLONG:
 				values := []int32{int32(interop.Count)}
 				meta.FIAvals[n].slong = &values
 			}
 		} else {
 			r.Seek(int64(interop.Offset), 0)
 			switch interop.Type {
-			case 1, 2, 7:
+			case UNDEFINED,ASCII,BYTE:
 				values := make([]byte, interop.Count)
 				binary.Read(r, b, &values)
 				meta.FIAvals[n].ascii = &values
-			case 3:
+			case SHORT:
 				values := make([]uint16, interop.Count)
 				binary.Read(r, b, &values)
 				meta.FIAvals[n].short = &values
-			case 4:
+			case SSHORT:
+				values := make([]int16, interop.Count)
+				binary.Read(r, b, &values)
+				meta.FIAvals[n].sshort = &values
+			case LONG:
 				values := make([]uint32, interop.Count)
 				binary.Read(r, b, &values)
 				meta.FIAvals[n].long = &values
-			case 9:
+			case SLONG:
 				values := make([]int32, interop.Count)
 				binary.Read(r, b, &values)
 				meta.FIAvals[n].slong = &values
-			case 5:
+			case RATIONAL:
 				values := make([]uint32, interop.Count*2)
 				binary.Read(r, b, &values)
 				floats := make([]float32,interop.Count)
@@ -415,7 +485,7 @@ func ExtractMetaData(r io.ReadSeeker, offset int64, whence int) (meta EXIFIFD, e
 					floats[i] = float32(values[i*2])/float32(values[(i*2)+1])
 				}
 				meta.FIAvals[n].rat = &floats
-			case 10:
+			case SRATIONAL:
 				values := make([]int32, interop.Count*2)
 				binary.Read(r, b, &values)
 				floats := make([]float32,interop.Count)
@@ -430,7 +500,7 @@ func ExtractMetaData(r io.ReadSeeker, offset int64, whence int) (meta EXIFIFD, e
 	return
 }
 
-var pad []uint32 = []uint32{0xae567acf, 0x3758b80d, 0x7c2906a5, 0x1a30e50c, 0xa4fff8d4, 0x5ad0ba02, 0xb0adfde3, 0x80c0bf1c, 0x28a40a6e, 0xb5210a3c, 0x3013ee1b, 0x6ac26b41, 0x306ec9eb, 0xbfc7c3fa, 0x01fa4ee0, 0xaa0b5077, 0x63280f17, 0x2b98271b, 0xc4a483ee, 0x0327efd8, 0x4f1919f3, 0x507e9187, 0x167b353b, 0xa7b2fcbe, 0xb2c45890, 0xef99db72, 0x497fdb56, 0x91564e98, 0xf777078d, 0xfd9e2bd5, 0x7c11b8b7, 0xd890cb9a, 0x16cd7e75, 0x4b1cc09f, 0xd4b88d85, 0x2719170a, 0x85ebe6e1, 0xd80aae2b, 0xa2a6d6c8, 0xfe277243, 0x4e9a6052, 0x4d5ab8d1, 0xd9796c35, 0x66fb9425, 0x2fc719ce, 0x574259e8, 0xed7debf6, 0x62729b9b, 0x8475e571, 0x6b6084e7, 0xd2101c0e, 0x12243ef8, 0xaccaf2ff, 0xf388743f, 0xfdb4dde3, 0xc259958e, 0xa3fc5e38, 0x63a2c363, 0xbd9006b7, 0x43f7adda, 0x3dd8b01e, 0x41aadc72, 0x01916c53, 0x04bae250, 0x7892b89b, 0x8b207c44, 0xf206a891, 0x1e353d29, 0x14292114, 0x2b2b82da, 0xcd5f120b, 0x6a3c7ee7, 0xb2ed663e, 0x822ef87b, 0xff64e96a, 0xd0250c39, 0x9a121fa9, 0xa516e885, 0xcbecec87, 0xea66c879, 0xa3fce75d, 0x9fe040f8, 0xd12016b4, 0xeb0c1103, 0xe5b8e3d3, 0xe8d8a3f6, 0x6930ebcf, 0x06a865eb, 0x18111138, 0xdde18c3b, 0xe342f4ef, 0xb793d2a1, 0xf7a7caaf, 0xd4e4bc34, 0x29ca7d80, 0xc6eedc2a, 0xbcdb6e5f, 0x2514c03c, 0x2a2326be, 0xc7f5392c, 0x2cf191c2, 0xc4c3f321, 0x0ca46ff9, 0x066c941b, 0x40aafc77, 0x855fcf74, 0x981c261d, 0x0667b6de, 0xb16db5d5, 0x0771f254, 0x53e22691, 0x022c8814, 0xc41f2789, 0x0abaf480, 0x2ffb0330, 0x112cf928, 0xd7c94972, 0x362c1b50, 0xf0659484, 0x4f00c4f1, 0x4f58bbed, 0xf258be43, 0x7f7b5ed2, 0x7ab1f464, 0x6046ca7f, 0x11d3954e, 0x3e7a285b, 0x00000000}
+var pad = []uint32{0xae567acf, 0x3758b80d, 0x7c2906a5, 0x1a30e50c, 0xa4fff8d4, 0x5ad0ba02, 0xb0adfde3, 0x80c0bf1c, 0x28a40a6e, 0xb5210a3c, 0x3013ee1b, 0x6ac26b41, 0x306ec9eb, 0xbfc7c3fa, 0x01fa4ee0, 0xaa0b5077, 0x63280f17, 0x2b98271b, 0xc4a483ee, 0x0327efd8, 0x4f1919f3, 0x507e9187, 0x167b353b, 0xa7b2fcbe, 0xb2c45890, 0xef99db72, 0x497fdb56, 0x91564e98, 0xf777078d, 0xfd9e2bd5, 0x7c11b8b7, 0xd890cb9a, 0x16cd7e75, 0x4b1cc09f, 0xd4b88d85, 0x2719170a, 0x85ebe6e1, 0xd80aae2b, 0xa2a6d6c8, 0xfe277243, 0x4e9a6052, 0x4d5ab8d1, 0xd9796c35, 0x66fb9425, 0x2fc719ce, 0x574259e8, 0xed7debf6, 0x62729b9b, 0x8475e571, 0x6b6084e7, 0xd2101c0e, 0x12243ef8, 0xaccaf2ff, 0xf388743f, 0xfdb4dde3, 0xc259958e, 0xa3fc5e38, 0x63a2c363, 0xbd9006b7, 0x43f7adda, 0x3dd8b01e, 0x41aadc72, 0x01916c53, 0x04bae250, 0x7892b89b, 0x8b207c44, 0xf206a891, 0x1e353d29, 0x14292114, 0x2b2b82da, 0xcd5f120b, 0x6a3c7ee7, 0xb2ed663e, 0x822ef87b, 0xff64e96a, 0xd0250c39, 0x9a121fa9, 0xa516e885, 0xcbecec87, 0xea66c879, 0xa3fce75d, 0x9fe040f8, 0xd12016b4, 0xeb0c1103, 0xe5b8e3d3, 0xe8d8a3f6, 0x6930ebcf, 0x06a865eb, 0x18111138, 0xdde18c3b, 0xe342f4ef, 0xb793d2a1, 0xf7a7caaf, 0xd4e4bc34, 0x29ca7d80, 0xc6eedc2a, 0xbcdb6e5f, 0x2514c03c, 0x2a2326be, 0xc7f5392c, 0x2cf191c2, 0xc4c3f321, 0x0ca46ff9, 0x066c941b, 0x40aafc77, 0x855fcf74, 0x981c261d, 0x0667b6de, 0xb16db5d5, 0x0771f254, 0x53e22691, 0x022c8814, 0xc41f2789, 0x0abaf480, 0x2ffb0330, 0x112cf928, 0xd7c94972, 0x362c1b50, 0xf0659484, 0x4f00c4f1, 0x4f58bbed, 0xf258be43, 0x7f7b5ed2, 0x7ab1f464, 0x6046ca7f, 0x11d3954e, 0x3e7a285b, 0x00000000}
 
 func DecryptSR2(r io.ReaderAt, offset uint32, length uint32) []byte{
 	buf := make([]byte,length)
@@ -460,7 +530,7 @@ func ExtractThumbnail(r io.ReaderAt, offset uint32, length uint32) ([]byte, erro
 	return jpegData, nil
 }
 
-type pixelblock struct {
+type crawPixelBlock struct {
 	max    uint16
 	min    uint16
 	maxidx uint8
@@ -468,19 +538,23 @@ type pixelblock struct {
 	pix    [14]uint8
 }
 
-const pixelblocksize = 16
+type rawPixelBlock struct {
+	pix [16]uint16
+}
+
+const pixelBlockSize = 16
 
 type pixel uint16
 
-func (p pixelblock) String() string {
+func (p crawPixelBlock) String() string {
 	return fmt.Sprintf("%011b\n%011b\n%04b\n%04b\n%08b", p.max, p.min, p.maxidx, p.minidx, p.pix)
 }
 
-func (p pixelblock) Decompress() [pixelblocksize]pixel {
-	var pix [pixelblocksize]pixel
+func (p crawPixelBlock) Decompress() [pixelBlockSize]pixel {
+	var pix [pixelBlockSize]pixel
 	factor := uint8(1 << uint8(math.Ceil(math.Log2(float64(p.max-p.min)/128))))
 	var ordinary int
-	for i := 0; i < pixelblocksize; i++ {
+	for i := 0; i < pixelBlockSize; i++ {
 		switch i {
 		case int(p.maxidx):
 			pix[i] = pixel(p.max)
@@ -495,8 +569,8 @@ func (p pixelblock) Decompress() [pixelblocksize]pixel {
 	return pix
 }
 
-func readblock(s []byte) pixelblock {
-	var p pixelblock
+func readCrawBlock(s []byte) crawPixelBlock {
+	var p crawPixelBlock
 
 	p.max = ((uint16(s[0]) & 0xff) << 3) + (uint16(s[1])&0xe0)>>5
 	p.min = ((uint16(s[1]) & 0x1f) << 6) + (uint16(s[2])&0xfc)>>2
@@ -522,41 +596,12 @@ func readblock(s []byte) pixelblock {
 	return p
 }
 
-//TODO(sjon): spec claims I should handle NULLs for ASCII
-func readByte(r io.Reader) byte {
-	var bt byte
-	binary.Read(r, b, &bt)
-	return bt
-}
+func readRawBlock(s []byte) rawPixelBlock {
+	var p rawPixelBlock
 
-func readUint16(r io.Reader) uint16 {
-	var short uint16
-	binary.Read(r, b, &short)
-	return short
-}
-
-func readUint32(r io.Reader) uint32 {
-	var long uint32
-	binary.Read(r, b, &long)
-	return long
-}
-
-//Used for fixpoint of 32 bit numerator and denominator
-func readUint64(r io.Reader) uint64 {
-	var longlong uint64
-	binary.Read(r, b, &longlong)
-	return longlong
-}
-
-func readInt32(r io.Reader) int32 {
-	var long int32
-	binary.Read(r, b, &long)
-	return long
-}
-
-//Used for fixpoint of 32 bit numerator and denominator
-func readInt64(r io.Reader) int64 {
-	var longlong int64
-	binary.Read(r, b, &longlong)
-	return longlong
+	r := bytes.NewReader(s)
+	for i := range p.pix {
+		binary.Read(r, b, &p.pix[i])
+	}
+	return p
 }
