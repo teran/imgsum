@@ -5,8 +5,6 @@ The tool would produce 64-bit integer as a hash
 ```
 Usage: ./bin/imgsum-darwin-amd64 [OPTION]... [FILE]...
 Print or check image Average hashes
-  -check
-    read average hashes from the FILEs and check them
   -concurrency
     Amount of routines to spawn at the same time(8 by default for your system)
   -find-duplicates
@@ -15,6 +13,8 @@ Print or check image Average hashes
     Read file list from stdin as a JSON({'files':['file1', 'file2']}) and calculate their hash
   -json-output
     Return duplicates as a JSON(useful for IPC)
+  -version
+    Print imgsum version
 
 Examples:
   ./bin/imgsum-darwin-amd64 file.jpg

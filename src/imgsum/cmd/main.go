@@ -47,43 +47,6 @@ func calculate(file string) error {
 	return nil
 }
 
-func check(checksumFile string) error {
-	fp, err := os.Open(checksumFile)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, checksumFile, err.Error())
-		return err
-	}
-	defer fp.Close()
-
-	r := bufio.NewReader(fp)
-	line, err := r.ReadString(10)
-	for err != io.EOF {
-		fields := strings.Fields(line)
-		if len(fields) == 2 {
-			i, err := image.NewImage(fields[1])
-			if err != nil {
-				fmt.Fprintln(os.Stderr, fields[1], err.Error())
-				continue
-			}
-
-			h, err := i.Hexdigest()
-			if err != nil {
-				fmt.Fprintln(os.Stderr, fields[1], err.Error())
-				continue
-			}
-
-			if fields[0] == h {
-				fmt.Printf("%v: OK\n", fields[1])
-			} else {
-				fmt.Printf("%v: FAILED\n", fields[1])
-			}
-		}
-
-		line, err = r.ReadString(10)
-	}
-	return nil
-}
-
 func deduplicate(filename string, json_output bool) error {
 	fp, err := os.Open(filename)
 	if err != nil {
@@ -141,8 +104,6 @@ func main() {
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [OPTION]... [FILE]...\n", os.Args[0])
 		fmt.Printf("Print or check image Average hashes\n")
-		fmt.Printf("  -check\n")
-		fmt.Printf("    read average hashes from the FILEs and check them\n")
 		fmt.Printf("  -concurrency\n")
 		fmt.Printf("    Amount of routines to spawn at the same time(%v by default for your system)\n", runtime.NumCPU())
 		fmt.Printf("  -find-duplicates\n")
@@ -161,7 +122,6 @@ func main() {
 		fmt.Printf("  cat input.json | %s -json-input\n", os.Args[0])
 	}
 
-	check_mode := flag.Bool("check", false, "")
 	deduplicate_mode := flag.Bool("find-duplicates", false, "")
 	json_output := flag.Bool("json-output", false, "")
 	json_input := flag.Bool("json-input", false, "")
@@ -174,11 +134,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if *check_mode == true {
-		for file := range flag.Args() {
-			check(flag.Arg(file))
-		}
-	} else if *deduplicate_mode {
+	if *deduplicate_mode {
 		for file := range flag.Args() {
 			deduplicate(flag.Arg(file), *json_output)
 		}
