@@ -122,10 +122,10 @@ func main() {
 		fmt.Printf("  cat input.json | %s -json-input\n", os.Args[0])
 	}
 
-	deduplicate_mode := flag.Bool("find-duplicates", false, "")
-	json_output := flag.Bool("json-output", false, "")
-	json_input := flag.Bool("json-input", false, "")
 	concurrency := flag.Int("concurrency", runtime.NumCPU(), "")
+	deduplicate_mode := flag.Bool("find-duplicates", false, "")
+	json_input := flag.Bool("json-input", false, "")
+	json_output := flag.Bool("json-output", false, "")
 	version := flag.Bool("version", false, "")
 
 	flag.Parse()
