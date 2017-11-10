@@ -104,7 +104,7 @@ func main() {
 	flag.Usage = func() {
 		fmt.Printf("Usage: %s [OPTION]... [FILE]...\n", os.Args[0])
 		fmt.Printf("Print or check image Average hashes\n")
-		fmt.Printf("  -concurrency\n")
+		fmt.Printf("  -concurrency %v\n", runtime.NumCPU())
 		fmt.Printf("    Amount of routines to spawn at the same time(%v by default for your system)\n", runtime.NumCPU())
 		fmt.Printf("  -find-duplicates\n")
 		fmt.Printf("    read average hashes from the FILEs and find duplicates\n")
