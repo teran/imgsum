@@ -27,7 +27,6 @@ type JsonInput struct {
 var wg sync.WaitGroup
 var Version = "No version specified(probably trunk build)"
 
-
 func calculate(file string) error {
 	i, err := image.NewImage(file)
 	if err != nil {
