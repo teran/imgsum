@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"imgsum/image"
+	"github.com/teran/imgsum/image"
 )
 
 type JsonOutput struct {
@@ -24,8 +24,13 @@ type JsonInput struct {
 	Files []string `json:"files"`
 }
 
-var wg sync.WaitGroup
-var Version = "No version specified(probably trunk build)"
+var (
+	wg sync.WaitGroup
+
+	version = "No version specified(probably trunk build)"
+	commit  = "master"
+	date    = "0000-00-00T00:00:00Z"
+)
 
 func calculate(file string) error {
 	i, err := image.NewImage(file)
@@ -126,10 +131,10 @@ func main() {
 	deduplicate_mode := flag.Bool("find-duplicates", false, "")
 	json_input := flag.Bool("json-input", false, "")
 	json_output := flag.Bool("json-output", false, "")
-	version := flag.Bool("version", false, "")
+	versionFlag := flag.Bool("version", false, "")
 
 	flag.Parse()
-	if flag.NArg() < 1 && !*json_input && !*version {
+	if flag.NArg() < 1 && !*json_input && !*versionFlag {
 		flag.Usage()
 		os.Exit(1)
 	}
@@ -138,8 +143,8 @@ func main() {
 		for file := range flag.Args() {
 			deduplicate(flag.Arg(file), *json_output)
 		}
-	} else if *version == true {
-		fmt.Println(Version)
+	} else if *versionFlag == true {
+		fmt.Printf("Version: %s\nBuild date: %s\nBuild commit: %s\n", version, date, commit)
 	} else {
 		var files []string
 		if *json_input {

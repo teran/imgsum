@@ -1,9 +1,9 @@
-export GOPATH := $(PWD)
-export GOBIN := $(GOPATH)/bin
-export PACKAGES := $(shell env GOPATH=$(GOPATH) go list ./src/imgsum/...)
-export REVISION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') || git rev-parse --verify --short HEAD)
+export PACKAGES := $(shell env GOPATH=$(GOPATH) go list ./...)
+export VERSION := $(shell git describe --exact-match --tags $(git log -n1 --pretty='%h') || git rev-parse --verify --short HEAD || echo ${VERSION})
+export COMMIT := $(shell git rev-parse --verify --short HEAD)
+export DATE := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-all: clean predependencies dependencies build
+all: clean dependencies build
 
 clean:
 	rm -vf bin/*
@@ -17,28 +17,28 @@ build-linux: build-linux-amd64 build-linux-i386
 build-windows: build-windows-amd64 build-windows-i386
 
 build-macos-amd64:
-	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-darwin-amd64 imgsum/cmd
+	GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-darwin-amd64 .
 
 build-macos-i386:
-	GOOS=darwin GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-darwin-i386 imgsum/cmd
+	GOOS=darwin GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-darwin-i386 .
 
 build-linux-amd64:
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-linux-amd64 imgsum/cmd
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-linux-amd64 .
 
 build-linux-i386:
-	GOOS=linux GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-linux-i386 imgsum/cmd
+	GOOS=linux GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-linux-i386 .
 
 build-windows-amd64:
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-windows-amd64.exe imgsum/cmd
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-windows-amd64.exe .
 
 build-windows-i386:
-	GOOS=windows GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.Version=${REVISION}" -o bin/imgsum-windows-i386.exe imgsum/cmd
+	GOOS=windows GOARCH=386 CGO_ENABLED=0 go build -ldflags "-X main.version=${VERSION} -X main.commit=${COMMIT} -X main.date=${DATE}" -o bin/imgsum-windows-i386.exe .
 
 dependencies:
-	cd src && trash
+	dep ensure
 
 predependencies:
-	go get -u github.com/rancher/trash
+	go get -u github.com/golang/dep/cmd/dep
 
 sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/imgsum-darwin-amd64.sig 				bin/imgsum-darwin-amd64
@@ -47,6 +47,9 @@ sign:
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/imgsum-linux-i386.sig 					bin/imgsum-linux-i386
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/imgsum-windows-amd64.exe.sig 	bin/imgsum-windows-amd64.exe
 	gpg --detach-sign --digest-algo SHA512 --no-tty --batch --output bin/imgsum-windows-i386.exe.sig 		bin/imgsum-windows-i386.exe
+
+test:
+	go test ./...
 
 verify:
 	gpg --verify bin/imgsum-darwin-amd64.sig 				bin/imgsum-darwin-amd64
