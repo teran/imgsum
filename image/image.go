@@ -9,9 +9,8 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/Soreil/arw"
-	"github.com/brett-lempereur/ish"
 	"github.com/nf/cr2"
+	"github.com/soreil/arw"
 )
 
 var (
@@ -117,8 +116,8 @@ func (i *Image) openSonyRaw() error {
 
 // Hexdigest produces image hash and returns it as string
 // actually the string is SHA256 from the hasher's value
-func (i *Image) Hexdigest() (string, error) {
-	hasher := ish.NewAverageHash(1024, 1024)
+func (i *Image) Hexdigest(hashKind HashType, res int) (string, error) {
+	hasher, err := getHasher(hashKind, res)
 	dh, err := hasher.Hash(i.image)
 	if err != nil {
 		return "", err

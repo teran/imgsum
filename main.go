@@ -32,7 +32,7 @@ var (
 	date    = "0000-00-00T00:00:00Z"
 )
 
-func calculate(file string) error {
+func calculate(file string, hashKind image.HashType, res int) error {
 	i, err := image.NewImage(file)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
@@ -40,7 +40,7 @@ func calculate(file string) error {
 		return err
 	}
 
-	h, err := i.Hexdigest()
+	h, err := i.Hexdigest(hashKind, res)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, file, err.Error())
 		wg.Done()
@@ -117,6 +117,10 @@ func main() {
 		fmt.Printf("    Read file list from stdin as a JSON({'files':['file1', 'file2']}) and calculate their hash\n")
 		fmt.Printf("  -json-output\n")
 		fmt.Printf("    Return duplicates as a JSON(useful for IPC)\n")
+		fmt.Printf("  -hash-kind avg|diff")
+		fmt.Printf("    Allows to set hash function: average or difference (avg by default)")
+		fmt.Printf("  -hash-resolution 1024")
+		fmt.Printf("    Allows to set the (squared) image resolution to pass to hashing function (1024 by default)")
 		fmt.Printf("  -version\n")
 		fmt.Printf("    Print imgsum version\n\n")
 		fmt.Printf("Examples:\n")
@@ -132,6 +136,8 @@ func main() {
 	json_input := flag.Bool("json-input", false, "")
 	json_output := flag.Bool("json-output", false, "")
 	versionFlag := flag.Bool("version", false, "")
+	hashKind := flag.String("hash-kind", "avg", "")
+	hashResolution := flag.Int("hash-resolution", 1024, "")
 
 	flag.Parse()
 	if flag.NArg() < 1 && !*json_input && !*versionFlag {
@@ -168,7 +174,7 @@ func main() {
 			filename := files[file]
 			wg.Add(1)
 			go func() {
-				calculate(filename)
+				calculate(filename, image.HashType(*hashKind), *hashResolution)
 				defer func() {
 					<-sem
 				}()
