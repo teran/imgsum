@@ -1,21 +1,17 @@
 package image
 
 import (
-	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	stdimage "image"
-	"image/jpeg"
 	"os"
 	"regexp"
 
 	"github.com/nf/cr2"
-	"github.com/soreil/arw"
 )
 
 var (
 	reCanon = regexp.MustCompile("(?i).cr(2)$")
-	reSony  = regexp.MustCompile("(?i).(arw|sr2)$")
 )
 
 // Image type
@@ -47,8 +43,6 @@ func (i *Image) open() error {
 
 	if reCanon.Match([]byte(i.filename)) {
 		err = i.openCanonRaw()
-	} else if reSony.Match([]byte(i.filename)) {
-		err = i.openSonyRaw()
 	} else {
 		err = i.openStdImage()
 	}
@@ -72,42 +66,6 @@ func (i *Image) openStdImage() error {
 func (i *Image) openCanonRaw() error {
 	var err error
 	i.image, err = cr2.Decode(i.fp)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (i *Image) openSonyRaw() error {
-	var jpegOffset uint32
-	var jpegLength uint32
-
-	header, err := arw.ParseHeader(i.fp)
-	if err != nil {
-		return err
-	}
-
-	meta, err := arw.ExtractMetaData(i.fp, int64(header.Offset), 0)
-	if err != nil {
-		return err
-	}
-
-	for i := range meta.FIA {
-		switch meta.FIA[i].Tag {
-		case arw.JPEGInterchangeFormat:
-			jpegOffset = meta.FIA[i].Offset
-		case arw.JPEGInterchangeFormatLength:
-			jpegLength = meta.FIA[i].Offset
-		}
-	}
-
-	jpg, err := arw.ExtractThumbnail(i.fp, jpegOffset, jpegLength)
-	if err != nil {
-		return err
-	}
-
-	reader := bytes.NewReader(jpg)
-	i.image, err = jpeg.Decode(reader)
 	if err != nil {
 		return err
 	}

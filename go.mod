@@ -3,7 +3,6 @@ module github.com/teran/imgsum
 go 1.13
 
 require (
-	github.com/soreil/arw v0.0.0-20180907190942-c71045f5319b
 	github.com/bamiaux/rez v0.0.0-20170731184118-29f4463c688b
 	github.com/brett-lempereur/ish v0.0.0-20161214150457-bbdc45bcf55d
 	github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac
