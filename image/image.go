@@ -15,16 +15,18 @@ import (
 )
 
 var (
-	re_canon = regexp.MustCompile("(?i).cr(2)$")
-	re_sony  = regexp.MustCompile("(?i).(arw|sr2)$")
+	reCanon = regexp.MustCompile("(?i).cr(2)$")
+	reSony  = regexp.MustCompile("(?i).(arw|sr2)$")
 )
 
+// Image type
 type Image struct {
 	filename string
 	fp       *os.File
 	image    stdimage.Image
 }
 
+// NewImage creates new Image object
 func NewImage(filename string) (*Image, error) {
 	i := new(Image)
 	i.filename = filename
@@ -44,9 +46,9 @@ func (i *Image) open() error {
 	}
 	defer i.fp.Close()
 
-	if re_canon.Match([]byte(i.filename)) {
+	if reCanon.Match([]byte(i.filename)) {
 		err = i.openCanonRaw()
-	} else if re_sony.Match([]byte(i.filename)) {
+	} else if reSony.Match([]byte(i.filename)) {
 		err = i.openSonyRaw()
 	} else {
 		err = i.openStdImage()
@@ -113,6 +115,8 @@ func (i *Image) openSonyRaw() error {
 	return nil
 }
 
+// Hexdigest produces image hash and returns it as string
+// actually the string is SHA256 from the hasher's value
 func (i *Image) Hexdigest() (string, error) {
 	hasher := ish.NewAverageHash(1024, 1024)
 	dh, err := hasher.Hash(i.image)
@@ -126,6 +130,7 @@ func (i *Image) Hexdigest() (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
+// Filename returns image's filename
 func (i *Image) Filename() string {
 	return i.filename
 }
