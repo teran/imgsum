@@ -59,7 +59,6 @@ Image format supported and tested:
 * Leaf RAW(`*.mos` - verified on Aptus 22, Aptus 75 doesn't work)
 * Nikon RAW(`*.nef` - only, `*.nrw` is not supported yet)
 * TIFF
-* Sony RAW(`*.arw`, `*.sr2`) - Experimental at the moment
 
 
 # TODO
