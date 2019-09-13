@@ -122,7 +122,9 @@ func main() {
 		fmt.Printf("  -hash-resolution 1024")
 		fmt.Printf("    Allows to set the (squared) image resolution to pass to hashing function (1024 by default)")
 		fmt.Printf("  -version\n")
-		fmt.Printf("    Print imgsum version\n\n")
+		fmt.Printf("    Print imgsum version\n")
+		fmt.Printf("  -credits\n")
+		fmt.Printf("    Print credits\n\n")
 		fmt.Printf("Examples:\n")
 		fmt.Printf("  %s file.jpg\n", os.Args[0])
 		fmt.Printf("  %s file.jpg | tee /tmp/database.txt\n", os.Args[0])
@@ -138,8 +140,14 @@ func main() {
 	versionFlag := flag.Bool("version", false, "")
 	hashKind := flag.String("hash-kind", "avg", "")
 	hashResolution := flag.Int("hash-resolution", 1024, "")
+	credits := flag.Bool("credits", false, "")
 
 	flag.Parse()
+	if *credits == true {
+		printCredits()
+		os.Exit(1)
+	}
+
 	if flag.NArg() < 1 && !*json_input && !*versionFlag {
 		flag.Usage()
 		os.Exit(1)
