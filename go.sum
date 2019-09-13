@@ -2,6 +2,8 @@ github.com/bamiaux/rez v0.0.0-20170731184118-29f4463c688b h1:5Ci5wpOL75rYF6RQGRo
 github.com/bamiaux/rez v0.0.0-20170731184118-29f4463c688b/go.mod h1:obBQGGIFbbv9KWg92Qu9UHeD94JXmHD1jovY/z6I3O8=
 github.com/brett-lempereur/ish v0.0.0-20161214150457-bbdc45bcf55d h1:oCP9o9IOvgi0A1biE1EkI/m+pViqJoCQjU/bAopLpBo=
 github.com/brett-lempereur/ish v0.0.0-20161214150457-bbdc45bcf55d/go.mod h1:sGi2C1jLbZM77czzwYX70vIkYV8Smll6xG93m96IZYw=
+github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
+github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gonum/blas v0.0.0-20181208220705-f22b278b28ac/go.mod h1:P32wAyui1PQ58Oce/KYkOqQv8cVw1zAapXOl+dRFGbc=
 github.com/gonum/floats v0.0.0-20181209220543-c233463c7e82/go.mod h1:PxC8OnwL11+aosOB5+iEPoV3picfs8tUpkVd0pDo+Kg=
 github.com/gonum/internal v0.0.0-20181124074243-f884aa714029/go.mod h1:Pu4dmpkhSyOzRwuXkOgAvijx4o+4YMUJJo9OvPYMkks=
@@ -11,8 +13,17 @@ github.com/gotk3/gotk3 v0.0.0-20190512183708-8365021fde1a/go.mod h1:Eew3QBwAOBTr
 github.com/nf/cr2 v0.0.0-20180623103828-4699471a17ed h1:QP63yO3XEt8tJ1DgBsNjbOyBGjy2eHy9ITK4Eisr9rg=
 github.com/nf/cr2 v0.0.0-20180623103828-4699471a17ed/go.mod h1:HazDB3gS/i//QXMMRmTAV7Ni9gAi4mDNTH2HjZ5aVgU=
 github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646/go.mod h1:jpp1/29i3P1S/RLdc7JQKbRpFeM1dOBd8T9ki5s+AY8=
+github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
+github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/steakknife/hamming v0.0.0-20180906055317-003c143a81c2 h1:o6NMd68tuqfQ0ZFnz2d16xzFNLWxrCvqF40InOJJHSM=
 github.com/steakknife/hamming v0.0.0-20180906055317-003c143a81c2/go.mod h1:hpGUWaI9xL8pRQCTXQgocU38Qw1g0Us7n5PxxTwTCYU=
+github.com/stretchr/objx v0.1.0 h1:4G4v2dO3VZwixGIRoQ5Lfboy6nUhCyYzaqnIAPPhYs4=
+github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
+github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
+github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 golang.org/x/image v0.0.0-20190516052701-61b8692d9a5c h1:VgWXv7ME0Tq2L5CBzVvhTMrfcKfvGs7ifTV9PBYTP3I=
 golang.org/x/image v0.0.0-20190516052701-61b8692d9a5c/go.mod h1:kZ7UVZpmo3dzQBMxlp+ypCbDeSB+sBbTgSJuh5dn5js=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2 h1:ZCJp+EgiOT7lHqUV2J862kp8Qj64Jo6az82+3Td9dZw=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=

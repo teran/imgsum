@@ -14,5 +14,6 @@ require (
 	github.com/nf/cr2 v0.0.0-20180623103828-4699471a17ed
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/steakknife/hamming v0.0.0-20180906055317-003c143a81c2
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/image v0.0.0-20190516052701-61b8692d9a5c
 )
