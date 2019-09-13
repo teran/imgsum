@@ -63,4 +63,4 @@ Image format supported and tested:
 
 # TODO
 
- * ORF format support
+ * Refactor into subpackages and add tests
