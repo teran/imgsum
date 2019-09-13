@@ -135,35 +135,47 @@ func main() {
 		fmt.Printf("  cat input.json | %s -json-input\n", os.Args[0])
 	}
 
-	concurrency := flag.Int("concurrency", runtime.NumCPU(), "")
-	deduplicateMode := flag.Bool("find-duplicates", false, "")
-	jsonInput := flag.Bool("json-input", false, "")
-	jsonOutput := flag.Bool("json-output", false, "")
-	versionFlag := flag.Bool("version", false, "")
-	hashKind := flag.String("hash-kind", "avg", "")
-	hashResolution := flag.Int("hash-resolution", 1024, "")
-	credits := flag.Bool("credits", false, "")
+	// cmdline parameters
+	var (
+		concurrency         int
+		deduplicateModeFlag bool
+		jsonInputFlag       bool
+		jsonOutputFlag      bool
+		versionFlag         bool
+		hashKind            string
+		hashResolution      int
+		creditsFlag         bool
+	)
+
+	flag.IntVar(&concurrency, "concurrency", runtime.NumCPU(), "")
+	flag.BoolVar(&deduplicateModeFlag, "find-duplicates", false, "")
+	flag.BoolVar(&jsonInputFlag, "json-input", false, "")
+	flag.BoolVar(&jsonOutputFlag, "json-output", false, "")
+	flag.BoolVar(&versionFlag, "version", false, "")
+	flag.StringVar(&hashKind, "hash-kind", "avg", "")
+	flag.IntVar(&hashResolution, "hash-resolution", 1024, "")
+	flag.BoolVar(&creditsFlag, "credits", false, "")
 
 	flag.Parse()
-	if *credits == true {
+	if creditsFlag == true {
 		printCredits()
 		os.Exit(1)
 	}
 
-	if flag.NArg() < 1 && !*jsonInput && !*versionFlag {
+	if flag.NArg() < 1 && !jsonInputFlag && !versionFlag {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if *deduplicateMode {
+	if deduplicateModeFlag {
 		for file := range flag.Args() {
-			deduplicate(flag.Arg(file), *jsonOutput)
+			deduplicate(flag.Arg(file), jsonOutputFlag)
 		}
-	} else if *versionFlag == true {
+	} else if versionFlag == true {
 		fmt.Printf("Version: %s\nBuild date: %s\nBuild commit: %s\n", version, date, commit)
 	} else {
 		var files []string
-		if *jsonInput {
+		if jsonInputFlag {
 			var jsonInput JSONInput
 			data, err := ioutil.ReadAll(os.Stdin)
 			if err != nil {
@@ -178,13 +190,13 @@ func main() {
 			files = flag.Args()
 		}
 
-		sem := make(chan bool, *concurrency)
+		sem := make(chan bool, concurrency)
 		for file := range files {
 			sem <- true
 			filename := files[file]
 			wg.Add(1)
 			go func() {
-				calculate(filename, image.HashType(*hashKind), *hashResolution)
+				calculate(filename, image.HashType(hashKind), hashResolution)
 				defer func() {
 					<-sem
 				}()
