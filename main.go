@@ -15,12 +15,14 @@ import (
 	"github.com/teran/imgsum/image"
 )
 
-type JsonOutput struct {
+// JSONOutput model
+type JSONOutput struct {
 	Duplicates [][]string `json:"duplicates"`
 	Count      int        `json:"count"`
 }
 
-type JsonInput struct {
+// JSONInput model
+type JSONInput struct {
 	Files []string `json:"files"`
 }
 
@@ -52,7 +54,7 @@ func calculate(file string, hashKind image.HashType, res int) error {
 	return nil
 }
 
-func deduplicate(filename string, json_output bool) error {
+func deduplicate(filename string, jsonOutput bool) error {
 	fp, err := os.Open(filename)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, filename, err.Error())
@@ -81,8 +83,8 @@ func deduplicate(filename string, json_output bool) error {
 		line, err = r.ReadString(10)
 	}
 
-	if json_output {
-		out := JsonOutput{}
+	if jsonOutput {
+		out := JSONOutput{}
 		for key := range counter {
 			out.Duplicates = append(out.Duplicates, files[counter[key]])
 		}
@@ -134,9 +136,9 @@ func main() {
 	}
 
 	concurrency := flag.Int("concurrency", runtime.NumCPU(), "")
-	deduplicate_mode := flag.Bool("find-duplicates", false, "")
-	json_input := flag.Bool("json-input", false, "")
-	json_output := flag.Bool("json-output", false, "")
+	deduplicateMode := flag.Bool("find-duplicates", false, "")
+	jsonInput := flag.Bool("json-input", false, "")
+	jsonOutput := flag.Bool("json-output", false, "")
 	versionFlag := flag.Bool("version", false, "")
 	hashKind := flag.String("hash-kind", "avg", "")
 	hashResolution := flag.Int("hash-resolution", 1024, "")
@@ -148,21 +150,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	if flag.NArg() < 1 && !*json_input && !*versionFlag {
+	if flag.NArg() < 1 && !*jsonInput && !*versionFlag {
 		flag.Usage()
 		os.Exit(1)
 	}
 
-	if *deduplicate_mode {
+	if *deduplicateMode {
 		for file := range flag.Args() {
-			deduplicate(flag.Arg(file), *json_output)
+			deduplicate(flag.Arg(file), *jsonOutput)
 		}
 	} else if *versionFlag == true {
 		fmt.Printf("Version: %s\nBuild date: %s\nBuild commit: %s\n", version, date, commit)
 	} else {
 		var files []string
-		if *json_input {
-			var jsonInput JsonInput
+		if *jsonInput {
+			var jsonInput JSONInput
 			data, err := ioutil.ReadAll(os.Stdin)
 			if err != nil {
 				panic(err)
