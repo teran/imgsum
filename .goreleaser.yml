@@ -1,3 +1,21 @@
+brews:
+  - name: imgsum
+    github:
+      owner: teran
+      name: homebrew-tap
+    ids:
+      - default
+    commit_author:
+      name: "Igor Shishkin"
+      email: me@teran.ru
+    url_template: "https://github.com/teran/imgsum/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    folder: Formula
+    homepage: "https://github.com/teran/imgsum"
+    description: "SHA256 file verification for consistency check purposes"
+    test: |
+      system "#{bin}/imgsum -version"
+    install: |
+      bin.install "imgsum"
 builds:
 - env:
     - CGO_ENABLED=0
@@ -12,12 +30,13 @@ builds:
     - arm
     - arm64
 archives:
-  - id: windows
-    replacements:
-      386: i386
+  - id: default
     format_overrides:
       - goos: windows
         format: zip
+    replacements:
+      386: i386
+      darwin: macOS
 checksum:
   name_template: 'checksums.txt'
 snapshot:
